@@ -2,6 +2,7 @@
 using Demo.DAL.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Linq;
 
 namespace Demo.PL.Controllers
 {
@@ -20,6 +21,20 @@ namespace Demo.PL.Controllers
 			var employees = _employeesRepository.GetAll();
 			return View(employees);
 		}
+
+		[HttpGet]
+		public IActionResult Search(string searchString)
+		{
+			var employees = _employeesRepository.GetAll();
+
+			if (!string.IsNullOrEmpty(searchString))
+			{
+				employees = employees.Where(e => e.Name.Contains(searchString));
+			}
+
+			return PartialView("_EmployeeListPartial", employees);
+		}
+
 
 		public IActionResult Details(int? id , string ViewName = "Details")
 		{
