@@ -7,11 +7,15 @@ using System.Threading.Tasks;
 
 namespace Demo.BLL.Interfaces
 {
-    public interface IDepartmentRepository : IGenericRepository<Department>
+    public interface IDepartmentRepository
     {
+        IEnumerable<Department> GetAll();
+        Department GetById(int departmentId);
+        int Add(Department department);
+        int Update(Department department);
+        int Delete(Department department);   // return int numbers of rows affected
 
 
 
-
-	}
+    }
 }
