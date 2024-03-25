@@ -10,8 +10,8 @@ namespace Demo.BLL.Interfaces
 	{
 		IEnumerable<T> GetAll();
 		T GetById(int Id);
-		int Add(T entity);
-		int Update(T entity);
-		int Delete(T entity);   // return int numbers of rows affected
+		void Add(T entity);
+		void Update(T entity);
+		void Delete(T entity);   // return int numbers of rows affected
 	}
 }

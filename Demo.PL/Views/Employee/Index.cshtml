@@ -5,19 +5,13 @@
 
 @if (TempData["Message"] != null)
 {
-	<div class="alert alert-success">
+	<div id="MessageDiv" class="alert alert-success">
 		@TempData["Message"]
 	</div>
-
-	// appear for only 3 sec
-	<script>
-		setTimeout(function () {
-			$("#alertMessage").fadeOut("slow");
-		}, 3000); // 3000 milliseconds = 3 seconds
-	</script>
 }
 
-<div id="alertMessage" class="alert alert-success" style="display:none;"></div>
+
+
 
 <form id="searchForm" class="mt-3">
 	<div class="input-group mb-3">
@@ -27,10 +21,11 @@
 </form>
 
 <div id="employeeList">
-	@Html.Partial("PartialViews/_EmployeeListPartial",Model)
+	@* @Html.Partial("PartialViews/_EmployeeListPartial",Model) *@
+	<partial name="PartialViews/_EmployeeListPartial" model="@Model" />
 </div>
 
-<a asp-action="Create" class="btn btn-success">Add New Employee</a>
+<a asp-controller="Employee" asp-action="Create" class="btn btn-success">Add New Employee</a>
 
 @section ValidationScriptsSection {
 	<script>
@@ -39,7 +34,7 @@
 				var searchString = $(this).val();
 				$.ajax({
 					url: '/Employee/Search',
-					type: 'GET',
+					type: 'POST',
 					data: { searchString: searchString },
 					success: function (result) {
 						$('#employeeList').html(result);

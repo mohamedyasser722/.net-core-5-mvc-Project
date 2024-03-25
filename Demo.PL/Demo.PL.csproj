@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Folder Include="Views\Department\PartialViews\" />
+    <Folder Include="wwwroot\Files\Images\" />
   </ItemGroup>
 
 </Project>

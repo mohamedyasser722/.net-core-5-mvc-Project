@@ -5,10 +5,10 @@
 
 <h1>Create New Employee</h1>
 
-<form method="post" asp-action="Create" asp-controller="Employee">
+<form method="post" asp-action="Create" asp-controller="Employee" enctype="multipart/form-data">
 
 	
-	<partial name="PartialViews/CreateEditPartialView">
+	<partial name="PartialViews/CreateEditPartialView" >
 	
 
 	<button type="submit" class="btn btn-primary">Save</button>

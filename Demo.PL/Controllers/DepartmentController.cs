@@ -8,16 +8,17 @@ namespace Demo.PL.Controllers
 {
     public class DepartmentController : Controller
     {
-        private readonly IDepartmentRepository _departmentRepository;
+        
+        private readonly IUnitOfWork _unitOfWork;
 
-        public DepartmentController(IDepartmentRepository departmentRepository) // ask CLR to inject the departmentRepository into the DepartmentController , i need to go to the startup.cs to configure the dependency injection
-        {
-            _departmentRepository = departmentRepository;
+        public DepartmentController(IUnitOfWork unitOfWork)// ask CLR to create an instance of IUnitOfWork
+		{
+            _unitOfWork = unitOfWork;
         }
 
         public IActionResult Index()
         {
-            var departments = _departmentRepository.GetAll();
+            var departments = _unitOfWork.DepartmentRepository.GetAll();
             return View(departments);
         }
         [HttpGet]
@@ -30,7 +31,8 @@ namespace Demo.PL.Controllers
         {
             if (ModelState.IsValid) // server side validation
             {   
-				int res =_departmentRepository.Add(department);
+				_unitOfWork.DepartmentRepository.Add(department);
+                int res = _unitOfWork.Complete();
                 if(res > 0)
                 {
                     TempData["Message"] = "Department Added Successfully";
@@ -46,7 +48,7 @@ namespace Demo.PL.Controllers
             if(id == null)
                 return BadRequest();
 
-            var department = _departmentRepository.GetById(id.Value);
+            var department = _unitOfWork.DepartmentRepository.GetById(id.Value);
             if(department == null)
                 return NotFound();
             return View(ViewName,department);
@@ -77,7 +79,8 @@ namespace Demo.PL.Controllers
             {
                 try
                 {
-					_departmentRepository.Update(department);
+					_unitOfWork.DepartmentRepository.Update(department);
+                    _unitOfWork.Complete();
 					return RedirectToAction("Index");
 				}
 				catch (System.Exception ex)
@@ -107,7 +110,8 @@ namespace Demo.PL.Controllers
             
             try
             {
-				_departmentRepository.Delete(department);
+				_unitOfWork.DepartmentRepository.Delete(department);
+                _unitOfWork.Complete();
 				return RedirectToAction("Index");
 			}
 			catch (System.Exception ex)

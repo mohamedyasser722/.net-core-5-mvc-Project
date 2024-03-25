@@ -1,39 +1,42 @@
 ﻿using AutoMapper;
 using Demo.BLL.Interfaces;
+using Demo.BLL.Repositories;
 using Demo.DAL.Models;
 using Demo.PL.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
+using Demo.PL.Helpers;
+
 
 namespace Demo.PL.Controllers
 {
 	public class EmployeeController : Controller
 	{
-		private readonly IEmployeesRepository _employeesRepository;
-		private readonly IDepartmentRepository _departmentRepository;
+		
 		private readonly IMapper _mapper;
-		public EmployeeController(IEmployeesRepository employeesRepository, IDepartmentRepository departmentRepository ,
-			IMapper mapper) 
+		private readonly IUnitOfWork _unitOfWork;
+
+		public EmployeeController(IUnitOfWork unitOfWork ,IMapper mapper) // ASK CLR to create an instance of IUnitOfWork
 		{
-			_employeesRepository = employeesRepository;
-			_departmentRepository = departmentRepository;
+			_unitOfWork = unitOfWork;
 			_mapper = mapper;
 
 		}
 		public IActionResult Index()
 		{
-			var employees = _employeesRepository.GetAll();
+			var employees = _unitOfWork.EmployeesRepository.GetAll();
 			var MappedEmployees = _mapper.Map<IEnumerable<Employee>, IEnumerable<EmployeeViewModel>>(employees);
 			return View(MappedEmployees);
 		}
 
-		[HttpGet]
+		[HttpPost]
 		public IActionResult Search(string searchString)
 		{
-			var employees = _employeesRepository.GetAll();
-			
+			var employees = _unitOfWork.EmployeesRepository.GetAll();
+
 			if (!string.IsNullOrEmpty(searchString))
 			{
 				employees = employees.Where(e => e.Name.ToLower().Contains(searchString.ToLower()));
@@ -50,7 +53,7 @@ namespace Demo.PL.Controllers
 			if (id == null)
 				return BadRequest();
 
-			var employee = _employeesRepository.GetById(id.Value);
+			var employee = _unitOfWork.EmployeesRepository.GetById(id.Value);
 
 			if (employee == null)
 				return NotFound();
@@ -62,17 +65,23 @@ namespace Demo.PL.Controllers
 		[HttpGet]
 		public IActionResult Create()
 		{
-			ViewBag.Departments = _departmentRepository.GetAll();
+			ViewBag.Departments = _unitOfWork.DepartmentRepository.GetAll();
 			return View();
 		}
-		[HttpPost] 
+		[HttpPost]  
 		public IActionResult Create(EmployeeViewModel employeeVM)
 		{
 			if (ModelState.IsValid)
 			{
+
+
+				employeeVM.ImageName = DocumentSettings.UploadFile(employeeVM.Image, "Images");
+				
+
 				// map the employeeVM to employee using automapper
 				var MappedEmployee = _mapper.Map<EmployeeViewModel , Employee>(employeeVM);
-				int res = _employeesRepository.Add(MappedEmployee);
+				_unitOfWork.EmployeesRepository.Add(MappedEmployee);
+				int res = _unitOfWork.Complete();
 				if (res > 0)
 				{
 					TempData["Message"] = "Employee Added Successfully";
@@ -84,7 +93,7 @@ namespace Demo.PL.Controllers
 		[HttpGet]
 		public IActionResult Edit(int? id)
 		{
-			ViewBag.Departments = _departmentRepository.GetAll();   // to solve the error of null reference exception
+			ViewBag.Departments =_unitOfWork.DepartmentRepository.GetAll();   // to solve the error of null reference exception
 			return Details(id, nameof(Edit));
 		}
 		[HttpPost]
@@ -99,7 +108,8 @@ namespace Demo.PL.Controllers
 				try
 				{
 					var MappedEmployee = _mapper.Map<EmployeeViewModel, Employee>(employeeVM);
-					_employeesRepository.Update(MappedEmployee);
+					_unitOfWork.EmployeesRepository.Update(MappedEmployee);
+					_unitOfWork.Complete();
 					return RedirectToAction("Index");
 				}
 				catch (System.Exception ex)
@@ -124,7 +134,13 @@ namespace Demo.PL.Controllers
 			try
 			{
 				var MappedEmployee = _mapper.Map<EmployeeViewModel, Employee>(employeeVM);
-				_employeesRepository.Delete(MappedEmployee);
+				_unitOfWork.EmployeesRepository.Delete(MappedEmployee);
+				int result = _unitOfWork.Complete();
+				if(result > 0 && employeeVM.ImageName is not null)
+				{
+					DocumentSettings.DeleteFile(employeeVM.ImageName, "Images");
+					TempData["Message"] = "Employee Deleted Successfully";
+				}
 				return RedirectToAction("Index");
 			}
 			catch (System.Exception ex)

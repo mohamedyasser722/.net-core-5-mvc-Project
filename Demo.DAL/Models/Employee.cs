@@ -25,10 +25,15 @@ namespace Demo.DAL.Models
 
         public DateTime HireDate { get; set; }
         public DateTime CreationDate { get; set; } = DateTime.Now;
+
+        public string ImageName { get; set; }
+
         [ForeignKey("Department")]
         public int? DepartmentId { get; set; }
         [InverseProperty("Employees")]
         public Department Department { get; set; }
+
+
 
 
     }
