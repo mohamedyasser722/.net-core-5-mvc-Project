@@ -1,7 +1,10 @@
-﻿using Demo.BLL.Interfaces;
+﻿using AutoMapper;
+using Demo.BLL.Interfaces;
 using Demo.DAL.Models;
+using Demo.PL.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Demo.PL.Controllers
@@ -10,29 +13,35 @@ namespace Demo.PL.Controllers
 	{
 		private readonly IEmployeesRepository _employeesRepository;
 		private readonly IDepartmentRepository _departmentRepository;
-		public EmployeeController(IEmployeesRepository employeesRepository, IDepartmentRepository departmentRepository) // ask CLR to create an Object from a class Implements IEmployeesRepository and inject it into the constructor
+		private readonly IMapper _mapper;
+		public EmployeeController(IEmployeesRepository employeesRepository, IDepartmentRepository departmentRepository ,
+			IMapper mapper) 
 		{
 			_employeesRepository = employeesRepository;
 			_departmentRepository = departmentRepository;
+			_mapper = mapper;
 
 		}
 		public IActionResult Index()
 		{
 			var employees = _employeesRepository.GetAll();
-			return View(employees);
+			var MappedEmployees = _mapper.Map<IEnumerable<Employee>, IEnumerable<EmployeeViewModel>>(employees);
+			return View(MappedEmployees);
 		}
 
 		[HttpGet]
 		public IActionResult Search(string searchString)
 		{
 			var employees = _employeesRepository.GetAll();
-
+			
 			if (!string.IsNullOrEmpty(searchString))
 			{
 				employees = employees.Where(e => e.Name.ToLower().Contains(searchString.ToLower()));
-			}
+				
 
-			return PartialView("PartialViews/_EmployeeListPartial", employees);
+			}
+			var MappedEmployees = _mapper.Map<IEnumerable<Employee>, IEnumerable<EmployeeViewModel>>(employees);
+			return PartialView("PartialViews/_EmployeeListPartial", MappedEmployees);
 		}
 
 
@@ -42,9 +51,12 @@ namespace Demo.PL.Controllers
 				return BadRequest();
 
 			var employee = _employeesRepository.GetById(id.Value);
+
 			if (employee == null)
 				return NotFound();
-			return View(ViewName, employee);
+
+			var MappedEmployee = _mapper.Map<Employee, EmployeeViewModel>(employee);
+			return View(ViewName, MappedEmployee);
 		}
 
 		[HttpGet]
@@ -53,19 +65,21 @@ namespace Demo.PL.Controllers
 			ViewBag.Departments = _departmentRepository.GetAll();
 			return View();
 		}
-		[HttpPost]
-		public IActionResult Create(Employee employee)
+		[HttpPost] 
+		public IActionResult Create(EmployeeViewModel employeeVM)
 		{
 			if (ModelState.IsValid)
 			{
-				int res = _employeesRepository.Add(employee);
+				// map the employeeVM to employee using automapper
+				var MappedEmployee = _mapper.Map<EmployeeViewModel , Employee>(employeeVM);
+				int res = _employeesRepository.Add(MappedEmployee);
 				if (res > 0)
 				{
 					TempData["Message"] = "Employee Added Successfully";
 				}
 				return RedirectToAction("Index");
 			}
-			return View(employee);
+			return View(employeeVM);
 		}
 		[HttpGet]
 		public IActionResult Edit(int? id)
@@ -76,15 +90,16 @@ namespace Demo.PL.Controllers
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 
-		public IActionResult Edit(Employee employee, [FromRoute] int id)
+		public IActionResult Edit(EmployeeViewModel employeeVM, [FromRoute] int id)
 		{
-			if (id != employee.Id)
+			if (id != employeeVM.Id)
 				return BadRequest();
 			if (ModelState.IsValid)
 			{
 				try
 				{
-					_employeesRepository.Update(employee);
+					var MappedEmployee = _mapper.Map<EmployeeViewModel, Employee>(employeeVM);
+					_employeesRepository.Update(MappedEmployee);
 					return RedirectToAction("Index");
 				}
 				catch (System.Exception ex)
@@ -92,7 +107,7 @@ namespace Demo.PL.Controllers
 					ModelState.AddModelError(string.Empty, ex.Message);
 				}
 			}
-			return View(employee);
+			return View(employeeVM);
 		}
 
 		public IActionResult Delete(int? id)
@@ -102,20 +117,21 @@ namespace Demo.PL.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public IActionResult Delete(Employee employee, [FromRoute] int id)
+		public IActionResult Delete(EmployeeViewModel employeeVM, [FromRoute] int id)
 		{
-			if (id != employee.Id)
+			if (id != employeeVM.Id)
 				return BadRequest();
 			try
 			{
-				_employeesRepository.Delete(employee);
+				var MappedEmployee = _mapper.Map<EmployeeViewModel, Employee>(employeeVM);
+				_employeesRepository.Delete(MappedEmployee);
 				return RedirectToAction("Index");
 			}
 			catch (System.Exception ex)
 			{
 				ModelState.AddModelError(string.Empty, ex.Message);
 			}
-			return View(employee);
+			return View(employeeVM);
 		}
 
 	}

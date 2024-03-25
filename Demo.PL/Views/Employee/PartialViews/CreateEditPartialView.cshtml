@@ -1,5 +1,5 @@
 ﻿
-@model Employee
+@model EmployeeViewModel
 @inject IDepartmentRepository DepartmentRepository
 
 @{
@@ -75,11 +75,3 @@
 	<span asp-validation-for="HireDate" class="text-danger"></span>
 
 </div>
-<div class="form-group">
-
-	<label class="col-form-label" asp-for="CreationDate"></label>
-	<input class="form-control" asp-for="CreationDate" />
-	<span asp-validation-for="CreationDate" class="text-danger"></span>
-
-</div>
- 

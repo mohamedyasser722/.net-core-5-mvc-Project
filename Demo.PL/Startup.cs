@@ -1,6 +1,7 @@
 using Demo.BLL.Interfaces;
 using Demo.BLL.Repositories;
 using Demo.DAL.Contexts;
+using Demo.PL.MappingProfiles;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -37,6 +38,7 @@ namespace Demo.PL
             // we will use dependency injection
             services.AddScoped<IDepartmentRepository, DepartmentRepository>(); // ask clr to inject the DepartmentRepository into the IDepartmentRepository
             services.AddScoped<IEmployeesRepository, EmployeeRepository>(); // ask clr to inject the EmployeeRepository into the IEmployeesRepository
+            services.AddAutoMapper(M => M.AddProfile(new EmployeeProfile()));
 
         }
 
