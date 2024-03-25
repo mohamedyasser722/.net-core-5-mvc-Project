@@ -8,9 +8,9 @@ namespace Demo.BLL.Interfaces
 {
 	public interface IGenericRepository<T>
 	{
-		IEnumerable<T> GetAll();
-		T GetById(int Id);
-		void Add(T entity);
+		Task<IEnumerable<T>> GetAllAsync();
+		Task<T> GetByIdAsync(int Id);
+		Task AddAsync(T entity);
 		void Update(T entity);
 		void Delete(T entity);   // return int numbers of rows affected
 	}

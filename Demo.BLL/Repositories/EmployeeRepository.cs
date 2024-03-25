@@ -13,7 +13,7 @@ namespace Demo.BLL.Repositories
 	{
 		private readonly MvcAppG01DbContext _dbContext;
 
-		public EmployeeRepository(MvcAppG01DbContext dbContext) : base(dbContext) // ask CLR for creating an instance of DbContext
+		public EmployeeRepository(MvcAppG01DbContext dbContext) : base(dbContext) // now the UnitOfWork is the one who creates the instance of DbContext
 		{
 			_dbContext = dbContext;
 		}

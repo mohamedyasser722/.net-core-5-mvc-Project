@@ -2,6 +2,7 @@
 using Demo.BLL.Repositories;
 using Demo.DAL.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 
 namespace Demo.PL.Controllers
@@ -16,9 +17,9 @@ namespace Demo.PL.Controllers
             _unitOfWork = unitOfWork;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var departments = _unitOfWork.DepartmentRepository.GetAll();
+            var departments = await _unitOfWork.DepartmentRepository.GetAllAsync();
             return View(departments);
         }
         [HttpGet]
@@ -27,12 +28,12 @@ namespace Demo.PL.Controllers
 			return View();
 		}
         [HttpPost]
-        public IActionResult Create(Department department)
+        public async Task<IActionResult> Create(Department department)
         {
             if (ModelState.IsValid) // server side validation
             {   
-				_unitOfWork.DepartmentRepository.Add(department);
-                int res = _unitOfWork.Complete();
+				await _unitOfWork.DepartmentRepository.AddAsync(department);
+                int res = await _unitOfWork.CompleteAsync();
                 if(res > 0)
                 {
                     TempData["Message"] = "Department Added Successfully";
@@ -43,20 +44,20 @@ namespace Demo.PL.Controllers
 		}
 
 
-        public IActionResult Details(int? id, string ViewName="Details")
+        public async Task<IActionResult> Details(int? id, string ViewName="Details")
         {
             if(id == null)
                 return BadRequest();
 
-            var department = _unitOfWork.DepartmentRepository.GetById(id.Value);
+            var department = await _unitOfWork.DepartmentRepository.GetByIdAsync(id.Value);
             if(department == null)
                 return NotFound();
-            return View(ViewName,department);
+            return View(ViewName, department);
             
         }
 
         [HttpGet]
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
 			//if(id == null)
 			//	return BadRequest();
@@ -65,12 +66,12 @@ namespace Demo.PL.Controllers
 			//if(department == null)
 			//	return NotFound();
 			//return View(department);
-            return Details(id, nameof(Edit));
+            return await Details(id, nameof(Edit));
 		}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-		public IActionResult Edit(Department department , [FromRoute] int id) 
+		public async Task<IActionResult> Edit(Department department , [FromRoute] int id) 
         {
             if (id != department.Id)   // to prevent hackers from changing the id in the form , using overposting attack
                 return BadRequest();
@@ -80,7 +81,7 @@ namespace Demo.PL.Controllers
                 try
                 {
 					_unitOfWork.DepartmentRepository.Update(department);
-                    _unitOfWork.Complete();
+                    await _unitOfWork.CompleteAsync();
 					return RedirectToAction("Index");
 				}
 				catch (System.Exception ex)
@@ -95,15 +96,15 @@ namespace Demo.PL.Controllers
         }
 
         [HttpGet]
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
 			
-            return Details(id, nameof(Delete));
+            return await Details(id, nameof(Delete));
 		}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(Department department , [FromRoute] int id)
+        public async Task<IActionResult> Delete(Department department , [FromRoute] int id)
         {
 			if (id != department.Id)   // to prevent hackers from changing the id in the form , using overposting attack
 				return BadRequest();
@@ -111,7 +112,7 @@ namespace Demo.PL.Controllers
             try
             {
 				_unitOfWork.DepartmentRepository.Delete(department);
-                _unitOfWork.Complete();
+                await _unitOfWork.CompleteAsync();
 				return RedirectToAction("Index");
 			}
 			catch (System.Exception ex)

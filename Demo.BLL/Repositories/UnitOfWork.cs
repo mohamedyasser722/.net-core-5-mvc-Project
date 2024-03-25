@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Demo.BLL.Repositories
 {
-	public class UnitOfWork : IUnitOfWork , IDisposable
+	public class UnitOfWork : IUnitOfWork
 	{
 
 		public IDepartmentRepository DepartmentRepository { get; }
@@ -23,9 +23,9 @@ namespace Demo.BLL.Repositories
 			_dbContext = dbcontext;
         }
 
-		public int Complete()
+		public async Task<int> CompleteAsync()
 		{
-			return _dbContext.SaveChanges();
+			return await _dbContext.SaveChangesAsync();
 		}
 
 		public void Dispose()

@@ -36,7 +36,7 @@ namespace Demo.PL
             }); // allow dependency injection
 
             // we will use dependency injection
-            services.AddScoped<IDepartmentRepository, DepartmentRepository>(); // ask clr to inject the DepartmentRepository into the IDepartmentRepository
+            services.AddScoped<IDepartmentRepository, DepartmentRepository>();// i am not using UnitOfWork here bec i have a view that i inject the department repository
            
             services.AddAutoMapper(M => M.AddProfile(new EmployeeProfile()));
             services.AddScoped<IUnitOfWork, UnitOfWork>(); // ask clr to inject the UnitOfWork into the IUnitOfWork

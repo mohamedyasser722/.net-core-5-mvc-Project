@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 namespace Demo.BLL.Interfaces
 {
-	public interface IUnitOfWork
+	public interface IUnitOfWork : IDisposable
 	{
 		// Singniture for Each Repository
 
 		IDepartmentRepository DepartmentRepository { get; }
 		IEmployeesRepository EmployeesRepository { get; }
-		int Complete();
-		void Dispose();
+		Task<int> CompleteAsync();
 	}
 }
