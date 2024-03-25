@@ -10,7 +10,7 @@ namespace Demo.PL.Controllers
 	{
 		private readonly IEmployeesRepository _employeesRepository;
 		private readonly IDepartmentRepository _departmentRepository;
-		public EmployeeController(IEmployeesRepository employeesRepository , IDepartmentRepository departmentRepository)	// ask CLR to create an Object from a class Implements IEmployeesRepository and inject it into the constructor
+		public EmployeeController(IEmployeesRepository employeesRepository, IDepartmentRepository departmentRepository) // ask CLR to create an Object from a class Implements IEmployeesRepository and inject it into the constructor
 		{
 			_employeesRepository = employeesRepository;
 			_departmentRepository = departmentRepository;
@@ -29,14 +29,14 @@ namespace Demo.PL.Controllers
 
 			if (!string.IsNullOrEmpty(searchString))
 			{
-				employees = employees.Where(e => e.Name.Contains(searchString));
+				employees = employees.Where(e => e.Name.ToLower().Contains(searchString.ToLower()));
 			}
 
-			return PartialView("_EmployeeListPartial", employees);
+			return PartialView("PartialViews/_EmployeeListPartial", employees);
 		}
 
 
-		public IActionResult Details(int? id , string ViewName = "Details")
+		public IActionResult Details(int? id, string ViewName = "Details")
 		{
 			if (id == null)
 				return BadRequest();
@@ -44,7 +44,7 @@ namespace Demo.PL.Controllers
 			var employee = _employeesRepository.GetById(id.Value);
 			if (employee == null)
 				return NotFound();
-			return View(ViewName,employee);
+			return View(ViewName, employee);
 		}
 
 		[HttpGet]
@@ -56,10 +56,10 @@ namespace Demo.PL.Controllers
 		[HttpPost]
 		public IActionResult Create(Employee employee)
 		{
-			if(ModelState.IsValid)
+			if (ModelState.IsValid)
 			{
 				int res = _employeesRepository.Add(employee);
-				if(res > 0)
+				if (res > 0)
 				{
 					TempData["Message"] = "Employee Added Successfully";
 				}
@@ -70,7 +70,7 @@ namespace Demo.PL.Controllers
 		[HttpGet]
 		public IActionResult Edit(int? id)
 		{
-			ViewBag.Departments = _departmentRepository.GetAll();	// to solve the error of null reference exception
+			ViewBag.Departments = _departmentRepository.GetAll();   // to solve the error of null reference exception
 			return Details(id, nameof(Edit));
 		}
 		[HttpPost]
@@ -78,18 +78,18 @@ namespace Demo.PL.Controllers
 
 		public IActionResult Edit(Employee employee, [FromRoute] int id)
 		{
-			if(id != employee.Id)
+			if (id != employee.Id)
 				return BadRequest();
-			if(ModelState.IsValid)
+			if (ModelState.IsValid)
 			{
 				try
 				{
 					_employeesRepository.Update(employee);
 					return RedirectToAction("Index");
 				}
-				catch(System.Exception ex)
+				catch (System.Exception ex)
 				{
-					ModelState.AddModelError(string.Empty,ex.Message);
+					ModelState.AddModelError(string.Empty, ex.Message);
 				}
 			}
 			return View(employee);
@@ -104,16 +104,16 @@ namespace Demo.PL.Controllers
 		[ValidateAntiForgeryToken]
 		public IActionResult Delete(Employee employee, [FromRoute] int id)
 		{
-			if(id != employee.Id)
+			if (id != employee.Id)
 				return BadRequest();
 			try
 			{
 				_employeesRepository.Delete(employee);
 				return RedirectToAction("Index");
 			}
-			catch(System.Exception ex)
+			catch (System.Exception ex)
 			{
-				ModelState.AddModelError(string.Empty,ex.Message);
+				ModelState.AddModelError(string.Empty, ex.Message);
 			}
 			return View(employee);
 		}
